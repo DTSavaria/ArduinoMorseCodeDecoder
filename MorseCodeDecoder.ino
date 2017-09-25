@@ -21,6 +21,7 @@ unsigned long previousHold = 0; //the length of time of the previous button pres
 
 int determineDotDash(unsigned long holdMillis);
 String getDotDashString(int input);
+String getDotDashSymbolString(int input);
 
 void setup() {
   pinMode(LED, OUTPUT);
@@ -50,7 +51,8 @@ void loop() {
 
     //print the results for now
     if (result == DOT || DASH) {
-      Serial.println(getDotDashString(result) + "(" + previousHold + ")");
+      //Serial.println(getDotDashString(result) + "(" + previousHold + ")");
+      Serial.print(getDotDashSymbolString(result));
     }
   }
 
@@ -85,3 +87,15 @@ String getDotDashString(int input) {
   return toReturn;
 }
 
+/**
+ * Given DOT, DASH, or NOTHING, return a string with a symbol
+ */
+String getDotDashSymbolString(int input) {
+  String toReturn = "";
+  if (input == DOT) {
+    toReturn = "·";
+  } else if (input == DASH) {
+    toReturn = "-";
+  }
+  return toReturn;
+}
