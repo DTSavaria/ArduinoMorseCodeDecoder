@@ -19,37 +19,14 @@ unsigned long holdStart = 0; //the time the input started
 unsigned long currentHold = 0; //the length of time of the current button press in milliseconds
 unsigned long previousHold = 0; //the length of time of the previous button press in milliseconds
 
+int determineDotDash(unsigned long holdMillis);
+String getDotDashString(int input);
+
 void setup() {
   pinMode(LED, OUTPUT);
   pinMode(BUTTON, INPUT_PULLUP);
 
   Serial.begin(9600);
-}
-
-/**
- * Given the length of a button press in milliseconds, return DOT, DASH, or NOTHING
- */
-int determineDotDash(unsigned long holdMillis) {
-  int toReturn = NOTHING;
-  if (previousHold >= dashMillisMin) {
-    toReturn = DASH;
-  } else if (previousHold >= dotMillisMin) {
-    toReturn = DOT;
-  }
-  return toReturn;
-}
-
-/**
- * Given DOT, DASH, or NOTHING, return a string representing it
- */
-String getDotDashString(int input) {
-  String toReturn = "nothing";
-  if (input == DOT) {
-    toReturn = "dot";
-  } else if (input == DASH) {
-    toReturn = "dash";
-  }
-  return toReturn;
 }
 
 void loop() {
@@ -82,5 +59,29 @@ void loop() {
   previousHold = currentHold;
 }
 
+/**
+ * Given the length of a button press in milliseconds, return DOT, DASH, or NOTHING
+ */
+int determineDotDash(unsigned long holdMillis) {
+  int toReturn = NOTHING;
+  if (previousHold >= dashMillisMin) {
+    toReturn = DASH;
+  } else if (previousHold >= dotMillisMin) {
+    toReturn = DOT;
+  }
+  return toReturn;
+}
 
+/**
+ * Given DOT, DASH, or NOTHING, return a string representing it
+ */
+String getDotDashString(int input) {
+  String toReturn = "nothing";
+  if (input == DOT) {
+    toReturn = "dot";
+  } else if (input == DASH) {
+    toReturn = "dash";
+  }
+  return toReturn;
+}
 
