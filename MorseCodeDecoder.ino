@@ -2,15 +2,15 @@
  * (c) 2017 Daniel Savaria
  * Released under the MIT license
  */
+ 
+#include "MorseNode.h"
+
+#include "Symbols.h"
+
+#define ARRAY_SIZE 256
 
 const int LED = LED_BUILTIN;
 const int BUTTON = 7;
-
-const int NOTHING = 0; //represents no input
-const int DOT = 1; //represent dot input
-const int DASH = 2; //represent dash input
-const int LETTER_SPACE = 3; //represent letter space
-const int WORD_SPACE = 4; //represent word space
 
 unsigned long dotMillisMin = 50; //minimum length of a button press for a dot in milliseconds
 unsigned long dashMillisMin = 200; //minimum length of a button press for a dash in milliseconds
@@ -28,6 +28,12 @@ unsigned long previousHold = 0; //the length of time of the previous button pres
 unsigned long spaceStart = 0; //the time the space started
 unsigned long currentSpace = 0; //the length of time of the current space in milliseconds
 unsigned long previousSpace = 0; //the length of time of the previous space in milliseconds
+boolean spaceProcessed = false;
+
+MorseNode * alphabet;
+
+int inputSymbols[ARRAY_SIZE];
+int inputIndex = 0;
 
 int determineDotDash(unsigned long holdMillis);
 int determineLetterWordSpace(unsigned long spaceMillis);
@@ -39,6 +45,8 @@ void setup() {
   pinMode(BUTTON, INPUT_PULLUP);
 
   Serial.begin(9600);
+
+  alphabet = MorseNode::getInternationalAlphabet();
 }
 
 void loop() {
@@ -50,12 +58,13 @@ void loop() {
   }
 
   if (inputVal == LOW && previousInputVal == HIGH) {
-    spaceStart = millis();
+    spaceStart = millis(); //capture the time the button stopped being pressed
   }
 
   if (inputVal == HIGH) {
     currentHold = millis() - holdStart; //if the button is being pressed, see for how long
     currentSpace = 0; //the button is being pressed, reset the space
+    spaceProcessed = false;
   } else {
     currentHold = 0; //the button is not being pressed, reset the hold
     currentSpace = millis() - spaceStart; //the button is not being pressed, see for how long
@@ -67,16 +76,43 @@ void loop() {
 
     //if the button stopped being pressed, determine if the previous press was a dot or dash
     result = determineDotDash(previousHold);
-  } else if (currentSpace < previousSpace) {
+  } else if (!spaceProcessed && determineLetterWordSpace(currentSpace) == WORD_SPACE) {
+    result = WORD_SPACE;
+    spaceProcessed = true;
+  } else if (!spaceProcessed && currentSpace < previousSpace) {
 
     //if the space is over, determine if the previous space was a letter or word space
     result = determineLetterWordSpace(previousSpace);
+    spaceProcessed = true;
   }
 
   if (result != NOTHING) {
-    //print the results for now
-    Serial.print(getDotDashOrSpaceSymbolString(result));
-    //Serial.println(getDotDashOrSpaceString(result) + "(" + previousHold + ", " + previousSpace + ")");
+
+    if ((result == DOT || result == DASH) && inputIndex < ARRAY_SIZE) {
+      
+      //if a dot or dash (and we didn't fill up the array) add it to the array
+      inputSymbols[inputIndex] = result;
+      inputIndex += 1;
+    } else {
+
+      //not a dot or dash (or array is full), the the character and print it
+      char c = alphabet->decode(&inputSymbols[0], inputIndex);
+
+      if (c != '\0') { //print the character
+        Serial.print(c);
+      } else { // couldn't find character, print symbols
+        for (int i = 0; i < inputIndex; i++) {
+          Serial.print(getDotDashOrSpaceSymbolString(inputSymbols[i]));
+        }
+      }
+
+      if (result == WORD_SPACE) {
+        Serial.print(' ');
+        spaceProcessed = true;
+      }
+
+      inputIndex = 0;
+    }
   }
 
   //set the previous values
@@ -144,3 +180,4 @@ String getDotDashOrSpaceSymbolString(int input) {
   }
   return toReturn;
 }
+
