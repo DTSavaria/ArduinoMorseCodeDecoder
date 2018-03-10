@@ -7,16 +7,22 @@
 
 #include "Symbols.h"
 
+//------------------------------------------------------------------------------
+
 #define ARRAY_SIZE 256
 
 const int LED = LED_BUILTIN;
 const int BUTTON = 7;
+
+//------------------------------------------------------------------------------
 
 unsigned long dotMillisMin = 50; //minimum length of a button press for a dot in milliseconds
 unsigned long dashMillisMin = 200; //minimum length of a button press for a dash in milliseconds
 
 unsigned long letterSpaceMillisMin = 500; //minimum length of no button press for a letter in milliseconds
 unsigned long wordSpaceMillisMin = 1700; //minimum length of no button press for a word space in milliseconds
+
+//------------------------------------------------------------------------------
 
 int inputVal = LOW; //the current input
 int previousInputVal = LOW; //the previous input
@@ -30,15 +36,21 @@ unsigned long currentSpace = 0; //the length of time of the current space in mil
 unsigned long previousSpace = 0; //the length of time of the previous space in milliseconds
 boolean spaceProcessed = false;
 
+//------------------------------------------------------------------------------
+
 MorseNode * alphabet;
 
 int inputSymbols[ARRAY_SIZE];
 int inputIndex = 0;
 
+//------------------------------------------------------------------------------
+
 int determineDotDash(unsigned long holdMillis);
 int determineLetterWordSpace(unsigned long spaceMillis);
 String getDotDashOrSpaceString(int input);
 String getDotDashOrSpaceSymbolString(int input);
+
+//------------------------------------------------------------------------------
 
 void setup() {
   pinMode(LED, OUTPUT);
@@ -48,6 +60,8 @@ void setup() {
 
   alphabet = MorseNode::getInternationalAlphabet();
 }
+
+//------------------------------------------------------------------------------
 
 void loop() {
   inputVal = (digitalRead(BUTTON) == HIGH) ? LOW : HIGH; //switch high and low because it's a pullup
@@ -121,6 +135,8 @@ void loop() {
   previousSpace = currentSpace;
 }
 
+//------------------------------------------------------------------------------
+
 /**
  * Given the length of a button press in milliseconds, return DOT, DASH, or NOTHING
  */
@@ -134,6 +150,8 @@ int determineDotDash(unsigned long holdMillis) {
   return toReturn;
 }
 
+//------------------------------------------------------------------------------
+
 /**
  * Given the length of a space in milliseconds, return LETTER_SPACE, WORD_SPACE, or NOTHING
  */
@@ -146,6 +164,8 @@ int determineLetterWordSpace(unsigned long spaceMillis) {
   }
   return toReturn;
 }
+
+//------------------------------------------------------------------------------
 
 /**
  * Given DOT, DASH, LETTER_SPACE, WORD_SPACE, or NOTHING, return a string representing it
@@ -164,6 +184,8 @@ String getDotDashOrSpaceString(int input) {
   return toReturn;
 }
 
+//------------------------------------------------------------------------------
+
 /**
  * Given DOT, DASH, LETTER_SPACE, WORD_SPACE, or NOTHING, return a string with a symbol
  */
@@ -180,4 +202,6 @@ String getDotDashOrSpaceSymbolString(int input) {
   }
   return toReturn;
 }
+
+//------------------------------------------------------------------------------
 
