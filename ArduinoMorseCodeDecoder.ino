@@ -3,7 +3,7 @@
  * Released under the MIT license
  */
  
-#include "MorseNode.h"
+#include "MorseNode.hpp"
 
 #include "Symbols.h"
 

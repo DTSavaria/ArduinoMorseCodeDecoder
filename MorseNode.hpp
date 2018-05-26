@@ -1,6 +1,6 @@
 
-#ifndef MORSENODE_H
-#define MORSENODE_H
+#ifndef MORSENODE_HPP
+#define MORSENODE_HPP
 
 #include "Symbols.h"
 
