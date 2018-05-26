@@ -7,6 +7,18 @@
 
 #include "Symbols.h"
 
+//#define TFT_DISPLAY
+#ifdef TFT_DISPLAY
+
+#include <Adafruit_ST7735.h> 
+
+const int TFT_CS = 10;
+const int TFT_RST = 9;
+const int TFT_DC = 8;
+Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS,  TFT_DC, TFT_RST);
+
+#endif
+
 //------------------------------------------------------------------------------
 
 #define ARRAY_SIZE 256
@@ -45,6 +57,9 @@ int inputIndex = 0;
 
 //------------------------------------------------------------------------------
 
+int getInput();
+void outputCharacter(char character);
+void outputString(String string);
 int determineDotDash(unsigned long holdMillis);
 int determineLetterWordSpace(unsigned long spaceMillis);
 String getDotDashOrSpaceString(int input);
@@ -53,9 +68,17 @@ String getDotDashOrSpaceSymbolString(int input);
 //------------------------------------------------------------------------------
 
 void setup() {
-  pinMode(LED, OUTPUT);
-  pinMode(BUTTON, INPUT_PULLUP);
+  #ifdef TFT_DISPLAY
+    tft.initR(INITR_BLACKTAB);
+    tft.fillScreen(ST7735_BLACK);
+    tft.setTextSize(2);
+    tft.setCursor(0, 0);
 
+  #else
+    pinMode(LED, OUTPUT);
+    pinMode(BUTTON, INPUT_PULLUP);
+  #endif
+  
   Serial.begin(9600);
 
   alphabet = MorseNode::getInternationalAlphabet();
@@ -64,7 +87,8 @@ void setup() {
 //------------------------------------------------------------------------------
 
 void loop() {
-  inputVal = (digitalRead(BUTTON) == HIGH) ? LOW : HIGH; //switch high and low because it's a pullup
+  inputVal = getInput();
+  
   digitalWrite(LED, inputVal);
 
   if (inputVal == HIGH && previousInputVal == LOW) {
@@ -113,15 +137,15 @@ void loop() {
       char c = alphabet->decode(&inputSymbols[0], inputIndex);
 
       if (c != '\0') { //print the character
-        Serial.print(c);
+        outputCharacter(c);
       } else { // couldn't find character, print symbols
         for (int i = 0; i < inputIndex; i++) {
-          Serial.print(getDotDashOrSpaceSymbolString(inputSymbols[i]));
+          outputString(getDotDashOrSpaceSymbolString(inputSymbols[i]));
         }
       }
 
       if (result == WORD_SPACE) {
-        Serial.print(' ');
+        outputCharacter(' ');
         spaceProcessed = true;
       }
 
@@ -205,3 +229,52 @@ String getDotDashOrSpaceSymbolString(int input) {
 
 //------------------------------------------------------------------------------
 
+int getButtonInput() {
+  return (digitalRead(BUTTON) == HIGH) ? LOW : HIGH; //switch high and low because it's a pullup
+}
+
+//------------------------------------------------------------------------------
+
+int getJoystickInput()
+{
+  int joystickState = analogRead(3);
+  
+  if (joystickState < 650) {
+    return HIGH;
+  } else {
+    return LOW;
+  }
+}
+
+//------------------------------------------------------------------------------
+
+int getInput() {
+  #ifdef TFT_DISPLAY
+    return getJoystickInput();
+  #else
+    return getButtonInput();
+  #endif
+  
+}
+
+//------------------------------------------------------------------------------
+
+void outputCharacter(char character) {
+  Serial.print(character);
+  
+  #ifdef TFT_DISPLAY
+    tft.print(character);
+  #endif
+}
+
+//------------------------------------------------------------------------------
+
+void outputString(String string) {
+  Serial.print(string);
+  
+  #ifdef TFT_DISPLAY
+    tft.print(string);
+  #endif
+}
+
+//------------------------------------------------------------------------------
