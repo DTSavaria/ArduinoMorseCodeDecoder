@@ -1,5 +1,5 @@
 /**
- * (c) 2017 Daniel Savaria
+ * (c) 2017, 2018 Daniel Savaria
  * Released under the MIT license
  */
  
